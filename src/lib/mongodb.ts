@@ -1,5 +1,10 @@
 import { MongoClient } from "mongodb";
 
+// Extend the global namespace to include our custom property
+declare global {
+  var _mongoClientPromise: Promise<MongoClient> | undefined;
+}
+
 const uri = process.env.MONGODB_URI!;
 const options = {};
 
