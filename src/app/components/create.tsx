@@ -40,6 +40,8 @@ const Create: React.FC = () => {
   const assignee = Form.useWatch("assignee", form);
   const { message } = App.useApp();
 
+  const maxModalWidth = typeof window !== "undefined" ? window.innerWidth : 800;
+
   const onFinish: FormProps<FieldType>["onFinish"] = async (values) => {
     const response = await fetch("/api/save", {
       method: "POST",
@@ -83,7 +85,7 @@ const Create: React.FC = () => {
         open={openModal}
         footer={null}
         onCancel={() => setOpenModal(false)}
-        width={Math.min(window.innerWidth, 800)}
+        width={Math.min(maxModalWidth, 800)}
       >
         <Form
           form={form}
