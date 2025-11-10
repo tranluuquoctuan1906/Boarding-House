@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useEffect } from "react";
 import type { FormProps } from "antd";
 import {
   Button,
@@ -14,11 +14,18 @@ import {
 } from "antd";
 import dayjs from "dayjs";
 
-export const listAssignees = [
-  { label: "Tất cả", value: "all" },
+export const listMembers = [
   { label: "Hùng", value: "Hung" },
   { label: "Tuấn", value: "Tuan" },
-  // { label: "Thế", value: "The" },
+];
+
+export const listAssignees = [
+  {
+    label: "Tất cả",
+    value: listMembers.map((member) => member.value).join(","),
+  },
+  { label: "Hùng", value: "Hung" },
+  { label: "Tuấn", value: "Tuan" },
 ];
 
 export type FieldType = {
@@ -33,14 +40,11 @@ const onFinishFailed: FormProps<FieldType>["onFinishFailed"] = (errorInfo) => {
   console.log("Failed:", errorInfo);
 };
 
-const Create: React.FC = () => {
-  const [openModal, setOpenModal] = React.useState(false);
-
+export const SaveForm = () => {
   const [form] = Form.useForm<FieldType>();
-  const assignee = Form.useWatch("assignee", form);
   const { message } = App.useApp();
 
-  const maxModalWidth = typeof window !== "undefined" ? window.innerWidth : 800;
+  const assignee = Form.useWatch("assignee", form);
 
   const onFinish: FormProps<FieldType>["onFinish"] = async (values) => {
     const response = await fetch("/api/save", {
@@ -48,12 +52,16 @@ const Create: React.FC = () => {
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify(values),
+      body: JSON.stringify({
+        ...values,
+        assignee: values.assignee?.flatMap((item) => item.split(",")),
+      }),
     });
     const data = await response.json();
     if (data.ok) {
       message.success("Lưu lại thành công!");
       form.resetFields();
+      localStorage.setItem("shouldReloadHistories", true.valueOf().toString());
     } else {
       message.error("Lưu lại thất bại!");
     }
@@ -77,6 +85,83 @@ const Create: React.FC = () => {
   }, [assignee, form]);
 
   return (
+    <Form
+      form={form}
+      name="CreateForm"
+      layout="vertical"
+      initialValues={{ date: dayjs() }}
+      onFinish={onFinish}
+      onFinishFailed={onFinishFailed}
+      autoComplete="off"
+      className="grid grid-cols-2 gap-x-4 max-md:grid-cols-1"
+    >
+      <Form.Item<FieldType>
+        label="Nội dung"
+        name="content"
+        rules={[{ required: true, message: "Vui lòng nhập nội dung!" }]}
+      >
+        <Input />
+      </Form.Item>
+
+      <Form.Item<FieldType>
+        label="Ngày tháng"
+        name="date"
+        rules={[{ required: true, message: "Vui lòng nhập ngày tháng!" }]}
+      >
+        <DatePicker className="w-full" />
+      </Form.Item>
+
+      <Form.Item<FieldType>
+        label="Số tiền"
+        name="amount"
+        rules={[{ required: true, message: "Vui lòng nhập số tiền!" }]}
+      >
+        <InputNumber className="!w-full" suffix="VNĐ" />
+      </Form.Item>
+
+      <Form.Item<FieldType>
+        label="Người chỉ định"
+        name="assignee"
+        rules={[{ required: true, message: "Vui lòng chọn người chỉ định!" }]}
+      >
+        <Select mode="multiple" placeholder="Chọn người chỉ định">
+          {listAssignees.map((assignee) => (
+            <Select.Option key={assignee.value} value={assignee.value}>
+              {assignee.label}
+            </Select.Option>
+          ))}
+        </Select>
+      </Form.Item>
+
+      <Form.Item<FieldType>
+        label="Người tạo"
+        name="creator"
+        rules={[{ required: true, message: "Vui lòng chọn người tạo!" }]}
+      >
+        <Select placeholder="Chọn người tạo">
+          {listMembers.map((assignee) => (
+            <Select.Option key={assignee.value} value={assignee.value}>
+              {assignee.label}
+            </Select.Option>
+          ))}
+        </Select>
+      </Form.Item>
+
+      <Form.Item label={null} className="col-span-2 max-md:col-span-1">
+        <Button type="primary" htmlType="submit" className="w-full">
+          Lưu lại
+        </Button>
+      </Form.Item>
+    </Form>
+  );
+};
+
+export const maxModalWidth = typeof window !== "undefined" ? window.innerWidth : 800;
+
+const Create: React.FC = () => {
+  const [openModal, setOpenModal] = React.useState(false);
+
+  return (
     <>
       <Button type="primary" onClick={() => setOpenModal(true)}>
         Tạo mới
@@ -87,78 +172,7 @@ const Create: React.FC = () => {
         onCancel={() => setOpenModal(false)}
         width={Math.min(maxModalWidth, 800)}
       >
-        <Form
-          form={form}
-          name="CreateForm"
-          layout="vertical"
-          initialValues={{ date: dayjs() }}
-          onFinish={onFinish}
-          onFinishFailed={onFinishFailed}
-          autoComplete="off"
-          className="grid grid-cols-2 gap-x-4 max-md:grid-cols-1"
-        >
-          <Form.Item<FieldType>
-            label="Nội dung"
-            name="content"
-            rules={[{ required: true, message: "Vui lòng nhập nội dung!" }]}
-          >
-            <Input />
-          </Form.Item>
-
-          <Form.Item<FieldType>
-            label="Ngày tháng"
-            name="date"
-            rules={[{ required: true, message: "Vui lòng nhập ngày tháng!" }]}
-          >
-            <DatePicker className="w-full" />
-          </Form.Item>
-
-          <Form.Item<FieldType>
-            label="Số tiền"
-            name="amount"
-            rules={[{ required: true, message: "Vui lòng nhập số tiền!" }]}
-          >
-            <InputNumber className="!w-full" suffix="VNĐ" />
-          </Form.Item>
-
-          <Form.Item<FieldType>
-            label="Người chỉ định"
-            name="assignee"
-            rules={[
-              { required: true, message: "Vui lòng chọn người chỉ định!" },
-            ]}
-          >
-            <Select mode="multiple" placeholder="Chọn người chỉ định">
-              {listAssignees.map((assignee) => (
-                <Select.Option key={assignee.value} value={assignee.value}>
-                  {assignee.label}
-                </Select.Option>
-              ))}
-            </Select>
-          </Form.Item>
-
-          <Form.Item<FieldType>
-            label="Người tạo"
-            name="creator"
-            rules={[{ required: true, message: "Vui lòng chọn người tạo!" }]}
-          >
-            <Select placeholder="Chọn người tạo">
-              {listAssignees
-                .filter((assignee) => assignee.value !== "all")
-                .map((assignee) => (
-                  <Select.Option key={assignee.value} value={assignee.value}>
-                    {assignee.label}
-                  </Select.Option>
-                ))}
-            </Select>
-          </Form.Item>
-
-          <Form.Item label={null} className="col-span-2 max-md:col-span-1">
-            <Button type="primary" htmlType="submit" className="w-full">
-              Lưu lại
-            </Button>
-          </Form.Item>
-        </Form>
+        <SaveForm />
       </Modal>
     </>
   );

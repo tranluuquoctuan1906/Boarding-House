@@ -1,9 +1,15 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { Table } from "antd";
+import { Modal, Table } from "antd";
 import type { TableProps } from "antd";
-import { FieldType, listAssignees } from "./create";
+import {
+  FieldType,
+  listAssignees,
+  listMembers,
+  maxModalWidth,
+  SaveForm,
+} from "./create";
 import dayjs from "dayjs";
 
 type DataType = {
@@ -32,8 +38,11 @@ const columns: TableProps<DataType>["columns"] = [
     dataIndex: "assignee",
     key: "assignee",
     render(value?: string[]) {
+      if (value?.length == listMembers.length) {
+        return "Tất cả";
+      }
       return (
-        listAssignees
+        listMembers
           .filter((assignee) => value?.includes(assignee.value))
           .reduce((acc, curr) => acc + curr.label + ", ", "")
           .slice(0, -2) || "-"
@@ -45,9 +54,7 @@ const columns: TableProps<DataType>["columns"] = [
     dataIndex: "date",
     key: "date",
     render(value) {
-      return value
-        ? dayjs(value).format("DD/MM/YYYY")
-        : "-";
+      return value ? dayjs(value).format("DD/MM/YYYY") : "-";
     },
   },
   {
@@ -68,6 +75,8 @@ const columns: TableProps<DataType>["columns"] = [
 
 const HistoriesTable: React.FC = () => {
   const [historiesData, setHistoriesData] = useState<DataType[]>([]);
+  const [historyItemSelected, setHistoryItemSelected] = useState<DataType>();
+
   useEffect(() => {
     const fetchData = async () => {
       const response = await fetch("/api/histories");
@@ -77,7 +86,46 @@ const HistoriesTable: React.FC = () => {
     fetchData();
   }, []);
 
-  return <Table<DataType> columns={columns} dataSource={historiesData} pagination={false} rowKey={'_id'} />;
+  // useEffect(() => {
+  //   historiesData.forEach((item) => {
+  //     fetch("/api/save", {
+  //       method: "PATCH",
+  //       headers: {
+  //         "Content-Type": "application/json",
+  //       },
+  //       body: JSON.stringify({
+  //         ...item,
+  //         assignee: ["Hung", "Tuan"],
+  //       }),
+  //     });
+  //   });
+  // }, [historiesData]);
+
+  return (
+    <>
+      <Table<DataType>
+        columns={columns}
+        dataSource={historiesData}
+        pagination={false}
+        rowKey={"_id"}
+        onRow={(data) => {
+          return {
+            onDoubleClick: () => {
+              setHistoryItemSelected(data);
+            },
+          };
+        }}
+      />
+      <Modal
+        open={!!historyItemSelected}
+        footer={null}
+        onCancel={() => setHistoryItemSelected(undefined)}
+        width={Math.min(maxModalWidth, 800)}
+      >
+        <SaveForm />
+      </Modal>
+    </>
+  );
 };
 
 export default HistoriesTable;
