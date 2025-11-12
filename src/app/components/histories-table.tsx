@@ -87,16 +87,45 @@ const HistoriesTable: React.FC = () => {
   }, []);
 
   // useEffect(() => {
-  //   historiesData.forEach((item) => {
-  //     fetch("/api/save", {
-  //       method: "PATCH",
-  //       headers: {
-  //         "Content-Type": "application/json",
-  //       },
-  //       body: JSON.stringify({
-  //         ...item,
-  //         assignee: ["Hung", "Tuan"],
-  //       }),
+  //   const newstatistics = historiesData.reduce(
+  //     (prev, curr) => {
+  //       const assignees = curr.assignee || [];
+  //       const assigneesLength = assignees.length;
+  //       const creator = curr.creator;
+  //       const amount = curr.amount ? parseFloat(curr.amount) : 0;
+  //       const reverseAmountCreator = assignees.includes(creator || "")
+  //         ? (amount / assigneesLength) * (assigneesLength - 1)
+  //         : amount;
+  //       const updateCreator = prev
+  //         .filter((item) => item.value === creator)
+  //         .map((item) => ({
+  //           ...item,
+  //           total: (item.total || 0) + reverseAmountCreator,
+  //         }));
+  //       const updateAssignees = prev
+  //         .filter(
+  //           (item) =>
+  //             assignees.includes(item.value || "") && item.value !== creator
+  //         )
+  //         .map((item) => ({
+  //           ...item,
+  //           total: (item.total || 0) - amount / assigneesLength,
+  //         }));
+  //       return [
+  //         ...prev.filter(
+  //           (item) =>
+  //             item.value !== creator && !assignees.includes(item.value || "")
+  //         ),
+  //         ...updateCreator,
+  //         ...updateAssignees,
+  //       ];
+  //     },
+  //     listMembers.map((assignee) => ({ ...assignee, total: 0 }))
+  //   );
+  //   newstatistics.forEach(async (statistic) => {
+  //     await fetch("/api/statistics", {
+  //       method: "POST",
+  //       body: JSON.stringify(statistic),
   //     });
   //   });
   // }, [historiesData]);
