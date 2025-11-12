@@ -1,5 +1,3 @@
-MONGODB_URI=mongodb+srv://tranluuquoctuan1997_db_user:x3hy72YhZwUKV5Jn@cluster0.nxxf4zs.mongodb.net/?appName=Cluster0
-
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
 ## Getting Started
