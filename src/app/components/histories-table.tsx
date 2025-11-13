@@ -1,20 +1,11 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { Modal, Table } from "antd";
 import type { TableProps } from "antd";
-import {
-  FieldType,
-  listAssignees,
-  listMembers,
-  maxModalWidth,
-  SaveForm,
-} from "./create";
+import { listAssignees, listMembers, maxModalWidth, SaveForm } from "./create";
 import dayjs from "dayjs";
-
-type DataType = {
-  _id: string;
-} & FieldType;
+import { DataType } from "../use-home-page";
 
 const columns: TableProps<DataType>["columns"] = [
   {
@@ -73,18 +64,12 @@ const columns: TableProps<DataType>["columns"] = [
   },
 ];
 
-const HistoriesTable: React.FC = () => {
-  const [historiesData, setHistoriesData] = useState<DataType[]>([]);
-  const [historyItemSelected, setHistoryItemSelected] = useState<DataType>();
+interface HistoriesTableProps {
+  historiesData: DataType[];
+}
 
-  useEffect(() => {
-    const fetchData = async () => {
-      const response = await fetch("/api/histories");
-      const result = await response.json();
-      setHistoriesData(result);
-    };
-    fetchData();
-  }, []);
+const HistoriesTable: React.FC<HistoriesTableProps> = ({ historiesData }) => {
+  const [historyItemSelected, setHistoryItemSelected] = useState<DataType>();
 
   // useEffect(() => {
   //   const newstatistics = historiesData.reduce(
