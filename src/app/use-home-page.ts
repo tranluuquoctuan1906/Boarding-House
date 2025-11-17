@@ -8,6 +8,7 @@ import dayjs from "dayjs";
 export type StatisticsType = {
   label: string;
   total: number;
+  value: string;
 };
 
 export type FieldType = {
@@ -48,7 +49,7 @@ export const useHomePage = () => {
 
   const assignee = Form.useWatch("assignee", form);
 
-  const { data: statistics } = useQuery({
+  const { data: statistics, refetch: refetchStatistics } = useQuery({
     queryKey: ["statistics"],
     queryFn: async () => {
       const res = await fetch("/api/statistics");
@@ -56,7 +57,7 @@ export const useHomePage = () => {
     },
   });
 
-  const { data: histories } = useQuery({
+  const { data: histories, refetch: refetchHistories } = useQuery({
     queryKey: ["histories"],
     queryFn: async () => {
       const res = await fetch("/api/histories");
@@ -65,6 +66,36 @@ export const useHomePage = () => {
   });
 
   const onFinish: FormProps<FieldType>["onFinish"] = async (values) => {
+    if (!statistics) return;
+    const assignees = values.assignee?.flatMap((item) => item.split(",")) || [];
+    const assigneesLength = assignees.length;
+    const creator = values.creator;
+    const amount = values.amount ? parseFloat(values.amount) : 0;
+    const reverseAmountCreator = assignees.includes(creator || "")
+      ? (amount / assigneesLength) * (assigneesLength - 1)
+      : amount;
+    const updateCreator = statistics
+      .filter((item) => item.value === creator)
+      .map((item) => ({
+        ...item,
+        total: (item.total || 0) + reverseAmountCreator,
+      }));
+    const updateAssignees = statistics
+      .filter(
+        (item) => assignees.includes(item.value || "") && item.value !== creator
+      )
+      .map((item) => ({
+        ...item,
+        total: (item.total || 0) - amount / assigneesLength,
+      }));
+    const newstatistics = [
+      ...statistics.filter(
+        (item) =>
+          item.value !== creator && !assignees.includes(item.value || "")
+      ),
+      ...updateCreator,
+      ...updateAssignees,
+    ];
     const response = await fetch("/api/save", {
       method: "POST",
       headers: {
@@ -73,13 +104,22 @@ export const useHomePage = () => {
       body: JSON.stringify({
         ...values,
         assignee: values.assignee?.flatMap((item) => item.split(",")),
+        date: dayjs(values.date).valueOf(),
         updateAt: dayjs().valueOf(),
       }),
     });
     const data = await response.json();
     if (data.ok) {
+      newstatistics.forEach(async (statistic) => {
+        await fetch("/api/statistics", {
+          method: "PATCH",
+          body: JSON.stringify(statistic),
+        });
+      });
       message.success("Lưu lại thành công!");
       form.resetFields();
+      refetchStatistics();
+      refetchHistories();
     } else {
       message.error("Lưu lại thất bại!");
     }
@@ -104,60 +144,3 @@ export const useHomePage = () => {
 
   return { statistics, histories, openModal, setOpenModal, form, onFinish };
 };
-
-//  React.useEffect(() => {
-//     histories?.forEach((history) => {
-//       fetch("/api/save", {
-//         method: "PATCH",
-//         body: JSON.stringify({
-//           ...history,
-//           date: dayjs(history.date).valueOf(),
-//           updateAt: dayjs(history.date).valueOf(),
-//         }),
-//       });
-//     });
-//   }, [histories]);
-
-// useEffect(() => {
-//   const newstatistics = historiesData.reduce(
-//     (prev, curr) => {
-//       const assignees = curr.assignee || [];
-//       const assigneesLength = assignees.length;
-//       const creator = curr.creator;
-//       const amount = curr.amount ? parseFloat(curr.amount) : 0;
-//       const reverseAmountCreator = assignees.includes(creator || "")
-//         ? (amount / assigneesLength) * (assigneesLength - 1)
-//         : amount;
-//       const updateCreator = prev
-//         .filter((item) => item.value === creator)
-//         .map((item) => ({
-//           ...item,
-//           total: (item.total || 0) + reverseAmountCreator,
-//         }));
-//       const updateAssignees = prev
-//         .filter(
-//           (item) =>
-//             assignees.includes(item.value || "") && item.value !== creator
-//         )
-//         .map((item) => ({
-//           ...item,
-//           total: (item.total || 0) - amount / assigneesLength,
-//         }));
-//       return [
-//         ...prev.filter(
-//           (item) =>
-//             item.value !== creator && !assignees.includes(item.value || "")
-//         ),
-//         ...updateCreator,
-//         ...updateAssignees,
-//       ];
-//     },
-//     listMembers.map((assignee) => ({ ...assignee, total: 0 }))
-//   );
-//   newstatistics.forEach(async (statistic) => {
-//     await fetch("/api/statistics", {
-//       method: "POST",
-//       body: JSON.stringify(statistic),
-//     });
-//   });
-// }, [historiesData]);
