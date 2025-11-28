@@ -1,16 +1,15 @@
 "use client";
 
 import type { FormInstance, FormProps } from "antd";
-import {
-  Button,
-  DatePicker,
-  Form,
-  Input,
-  InputNumber,
-  Select,
-} from "antd";
+import { Button, DatePicker, Form, Input, InputNumber, Select } from "antd";
 import dayjs from "dayjs";
-import { FieldType, listAssignees, listMembers } from "../use-home-page";
+import {
+  DataType,
+  FieldType,
+  listAssignees,
+  listMembers,
+} from "../use-home-page";
+import { useEffect } from "react";
 
 const onFinishFailed: FormProps<FieldType>["onFinishFailed"] = (errorInfo) => {
   console.log("Failed:", errorInfo);
@@ -19,9 +18,22 @@ const onFinishFailed: FormProps<FieldType>["onFinishFailed"] = (errorInfo) => {
 interface SaveFormProps {
   onFinish: FormProps<FieldType>["onFinish"];
   form: FormInstance<FieldType>;
+  initValues?: DataType;
 }
 
-const SaveForm = ({ onFinish, form }: SaveFormProps) => {
+const SaveForm = ({ onFinish, form, initValues }: SaveFormProps) => {
+  useEffect(() => {
+    if (initValues) {
+      form.setFieldsValue({
+        amount: initValues.amount,
+        assignee: initValues.assignee,
+        content: initValues.content,
+        creator: initValues.creator,
+        date: initValues.date ? dayjs(initValues.date) : undefined,
+      });
+    }
+  }, [initValues, form]);
+
   return (
     <Form
       form={form}
@@ -87,8 +99,13 @@ const SaveForm = ({ onFinish, form }: SaveFormProps) => {
 
       <Form.Item label={null} className="col-span-2 max-md:col-span-1">
         <Button type="primary" htmlType="submit" className="w-full">
-          Lưu lại
+          {!!initValues ? "Cập nhật" : "Lưu lại"}
         </Button>
+        {!!initValues && (
+          <Button type="primary" danger className="mt-2 w-full">
+            Xoá
+          </Button>
+        )}
       </Form.Item>
     </Form>
   );

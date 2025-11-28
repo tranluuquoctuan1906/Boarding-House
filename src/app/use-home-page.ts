@@ -13,7 +13,7 @@ export type StatisticsType = {
 
 export type FieldType = {
   content?: string;
-  date?: number;
+  date?: dayjs.Dayjs;
   amount?: string;
   assignee?: string[];
   creator?: string;
@@ -69,6 +69,9 @@ export const useHomePage = () => {
 
   const onFinish: FormProps<FieldType>["onFinish"] = async (values) => {
     if (!statistics) return;
+    if (historyItemSelected) {
+      return;
+    }
     const assignees = values.assignee?.flatMap((item) => item.split(",")) || [];
     const assigneesLength = assignees.length;
     const creator = values.creator;
@@ -144,5 +147,14 @@ export const useHomePage = () => {
     }
   }, [assignee, form]);
 
-  return { statistics, histories, openModal, setOpenModal, form, onFinish };
+  return {
+    statistics,
+    histories,
+    openModal,
+    setOpenModal,
+    form,
+    onFinish,
+    historyItemSelected,
+    setHistoryItemSelected,
+  };
 };

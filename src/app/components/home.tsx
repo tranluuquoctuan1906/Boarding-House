@@ -8,8 +8,16 @@ import { Button, Modal } from "antd";
 import SaveForm from "./save-form";
 
 export const HomePage = () => {
-  const { statistics, histories, openModal, setOpenModal, form, onFinish } =
-    useHomePage();
+  const {
+    statistics,
+    histories,
+    openModal,
+    setOpenModal,
+    form,
+    onFinish,
+    historyItemSelected,
+    setHistoryItemSelected,
+  } = useHomePage();
 
   if (!statistics || !histories)
     return (
@@ -27,15 +35,25 @@ export const HomePage = () => {
             Tạo mới
           </Button>
         </div>
-        <HistoriesTable historiesData={histories} />
+        <HistoriesTable
+          historiesData={histories}
+          onRowDoubleClick={(record) => {
+            setOpenModal(true);
+            setHistoryItemSelected(record);
+          }}
+        />
       </div>
       <Modal
         open={openModal}
         footer={null}
-        onCancel={() => setOpenModal(false)}
+        onCancel={() => {
+          setOpenModal(false);
+          setHistoryItemSelected(undefined);
+          form.resetFields();
+        }}
         width={Math.min(maxModalWidth, 800)}
       >
-        <SaveForm form={form} onFinish={onFinish} />
+        <SaveForm form={form} onFinish={onFinish} initValues={historyItemSelected} />
       </Modal>
     </>
   );

@@ -65,11 +65,13 @@ const columns: TableProps<DataType>["columns"] = [
 
 interface HistoriesTableProps {
   historiesData: DataType[];
+  onRowDoubleClick?: (record: DataType) => void;
 }
 
-const HistoriesTable: React.FC<HistoriesTableProps> = ({ historiesData }) => {
-  const [historyItemSelected, setHistoryItemSelected] = useState<DataType>();
-
+const HistoriesTable: React.FC<HistoriesTableProps> = ({
+  historiesData,
+  onRowDoubleClick,
+}) => {
   return (
     <>
       <Table<DataType>
@@ -81,7 +83,7 @@ const HistoriesTable: React.FC<HistoriesTableProps> = ({ historiesData }) => {
         onRow={(data) => {
           return {
             onDoubleClick: () => {
-              setHistoryItemSelected(data);
+              onRowDoubleClick?.(data);
             },
           };
         }}
