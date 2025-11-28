@@ -69,8 +69,42 @@ export const useHomePage = () => {
 
   const onFinish: FormProps<FieldType>["onFinish"] = async (values) => {
     if (!statistics) return;
+    let statisticsUsed = statistics;
     if (historyItemSelected) {
-      return;
+      const assignees =
+        historyItemSelected.assignee?.flatMap((item) => item.split(",")) || [];
+      const assigneesLength = assignees.length;
+      const creator = historyItemSelected.creator;
+      const amount = historyItemSelected.amount
+        ? parseFloat(historyItemSelected.amount)
+        : 0;
+      const reverseAmountCreator = assignees.includes(creator || "")
+        ? (amount / assigneesLength) * (assigneesLength - 1)
+        : amount;
+      const updateCreator = statistics
+        .filter((item) => item.value === creator)
+        .map((item) => ({
+          ...item,
+          total: (item.total || 0) - reverseAmountCreator,
+        }));
+      const updateAssignees = statistics
+        .filter(
+          (item) =>
+            assignees.includes(item.value || "") && item.value !== creator
+        )
+        .map((item) => ({
+          ...item,
+          total: (item.total || 0) + amount / assigneesLength,
+        }));
+      const newstatistics = [
+        ...statistics.filter(
+          (item) =>
+            item.value !== creator && !assignees.includes(item.value || "")
+        ),
+        ...updateCreator,
+        ...updateAssignees,
+      ];
+      statisticsUsed = newstatistics;
     }
     const assignees = values.assignee?.flatMap((item) => item.split(",")) || [];
     const assigneesLength = assignees.length;
@@ -79,13 +113,13 @@ export const useHomePage = () => {
     const reverseAmountCreator = assignees.includes(creator || "")
       ? (amount / assigneesLength) * (assigneesLength - 1)
       : amount;
-    const updateCreator = statistics
+    const updateCreator = statisticsUsed
       .filter((item) => item.value === creator)
       .map((item) => ({
         ...item,
         total: (item.total || 0) + reverseAmountCreator,
       }));
-    const updateAssignees = statistics
+    const updateAssignees = statisticsUsed
       .filter(
         (item) => assignees.includes(item.value || "") && item.value !== creator
       )
@@ -94,7 +128,7 @@ export const useHomePage = () => {
         total: (item.total || 0) - amount / assigneesLength,
       }));
     const newstatistics = [
-      ...statistics.filter(
+      ...statisticsUsed.filter(
         (item) =>
           item.value !== creator && !assignees.includes(item.value || "")
       ),
@@ -102,11 +136,12 @@ export const useHomePage = () => {
       ...updateAssignees,
     ];
     const response = await fetch("/api/save", {
-      method: "POST",
+      method: historyItemSelected ? "PATCH" : "POST",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
+        ...(historyItemSelected ? historyItemSelected : {}),
         ...values,
         assignee: values.assignee?.flatMap((item) => item.split(",")),
         date: dayjs(values.date).valueOf(),
@@ -125,6 +160,10 @@ export const useHomePage = () => {
       form.resetFields();
       refetchStatistics();
       refetchHistories();
+      if (historyItemSelected) {
+        setOpenModal(false);
+        setHistoryItemSelected(undefined);
+      }
     } else {
       message.error("Lưu lại thất bại!");
     }
