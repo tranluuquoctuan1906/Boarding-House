@@ -17,6 +17,7 @@ export type FieldType = {
   amount?: string;
   assignee?: string[];
   creator?: string;
+  isDeleted?: boolean;
 };
 
 export type DataType = {
@@ -150,12 +151,14 @@ export const useHomePage = () => {
     });
     const data = await response.json();
     if (data.ok) {
-      newstatistics.forEach(async (statistic) => {
-        await fetch("/api/statistics", {
-          method: "PATCH",
-          body: JSON.stringify(statistic),
-        });
-      });
+      (values.isDeleted ? statisticsUsed : newstatistics).forEach(
+        async (statistic) => {
+          await fetch("/api/statistics", {
+            method: "PATCH",
+            body: JSON.stringify(statistic),
+          });
+        }
+      );
       message.success("Lưu lại thành công!");
       form.resetFields();
       refetchStatistics();

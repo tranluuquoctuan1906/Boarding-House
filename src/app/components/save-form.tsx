@@ -1,7 +1,15 @@
 "use client";
 
 import type { FormInstance, FormProps } from "antd";
-import { Button, DatePicker, Form, Input, InputNumber, Select } from "antd";
+import {
+  Button,
+  Checkbox,
+  DatePicker,
+  Form,
+  Input,
+  InputNumber,
+  Select,
+} from "antd";
 import dayjs from "dayjs";
 import {
   DataType,
@@ -39,7 +47,7 @@ const SaveForm = ({ onFinish, form, initValues }: SaveFormProps) => {
       form={form}
       name="CreateForm"
       layout="vertical"
-      initialValues={{ date: dayjs() }}
+      initialValues={{ date: dayjs(), isDeleted: false }}
       onFinish={onFinish}
       onFinishFailed={onFinishFailed}
       autoComplete="off"
@@ -97,12 +105,24 @@ const SaveForm = ({ onFinish, form, initValues }: SaveFormProps) => {
         </Select>
       </Form.Item>
 
+      <Form.Item<FieldType> name="isDeleted" hidden>
+        <Checkbox />
+      </Form.Item>
+
       <Form.Item label={null} className="col-span-2 max-md:col-span-1">
         <Button type="primary" htmlType="submit" className="w-full">
           {!!initValues ? "Cập nhật" : "Lưu lại"}
         </Button>
         {!!initValues && (
-          <Button type="primary" danger className="mt-2 w-full">
+          <Button
+            type="primary"
+            onClick={() => {
+              form.setFieldsValue({ isDeleted: true });
+              form.submit();
+            }}
+            danger
+            className="mt-2 w-full"
+          >
             Xoá
           </Button>
         )}

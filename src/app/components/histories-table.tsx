@@ -80,10 +80,15 @@ const HistoriesTable: React.FC<HistoriesTableProps> = ({
         dataSource={historiesData}
         pagination={false}
         rowKey={"_id"}
+        rowClassName={(record) =>
+          record.isDeleted ? "bg-red-100 pointer-events-none opacity-75" : ""
+        }
         onRow={(data) => {
           return {
             onDoubleClick: () => {
-              onRowDoubleClick?.(data);
+              if (!data.isDeleted) {
+                onRowDoubleClick?.(data);
+              }
             },
           };
         }}
