@@ -43,6 +43,8 @@ export const listAssignees = [
 
 export const useHomePage = () => {
   const [openModal, setOpenModal] = React.useState(false);
+  const [historyItemSelected, setHistoryItemSelected] =
+    React.useState<DataType>();
 
   const [form] = Form.useForm<FieldType>();
   const { message } = App.useApp();

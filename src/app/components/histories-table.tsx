@@ -73,6 +73,7 @@ const HistoriesTable: React.FC<HistoriesTableProps> = ({ historiesData }) => {
   return (
     <>
       <Table<DataType>
+        scroll={{ x: 700, y: window.innerHeight - 150 }}
         columns={columns}
         dataSource={historiesData}
         pagination={false}
