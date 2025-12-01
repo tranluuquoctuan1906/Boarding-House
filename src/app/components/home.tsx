@@ -30,7 +30,7 @@ export const HomePage = () => {
   return (
     <>
       <div className="p-4 flex flex-col gap-4">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between max-sm:flex-col max-sm:gap-2 max-sm:items-start">
           <Statistics statistics={statistics} />
           <div className="flex items-center gap-2">
             <Button type="primary" onClick={exportToExcel}>
