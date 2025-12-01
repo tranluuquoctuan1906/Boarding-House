@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { App, Form, FormProps } from "antd";
 import React from "react";
 import dayjs from "dayjs";
+import * as XLSX from "xlsx";
 
 export type StatisticsType = {
   label: string;
@@ -172,6 +173,26 @@ export const useHomePage = () => {
     }
   };
 
+  const exportToExcel = () => {
+    const worksheet = XLSX.utils.json_to_sheet(
+      histories?.map((value) => ({
+        ...value,
+        date: dayjs(value.date).format("DD/MM/YYYY"),
+        assignee:
+          value.assignee
+            ?.reduce((acc, curr) => {
+              const member = listMembers.find((item) => item.value === curr);
+              return acc + (member ? member.label : curr) + ", ";
+            }, "")
+            .slice(0, -2) || "",
+        updateAt: dayjs(value.updateAt).format("DD/MM/YYYY HH:mm:ss"),
+      })) || []
+    );
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Sheet1");
+    XLSX.writeFile(workbook, "table.xlsx");
+  };
+
   React.useEffect(() => {
     if (assignee && assignee.length > 1) {
       const allValues = listAssignees
@@ -198,5 +219,6 @@ export const useHomePage = () => {
     onFinish,
     historyItemSelected,
     setHistoryItemSelected,
+    exportToExcel,
   };
 };

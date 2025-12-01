@@ -46,6 +46,12 @@ const columns: TableProps<DataType>["columns"] = [
     render(value) {
       return value ? dayjs(value).format("DD/MM/YYYY") : "-";
     },
+    sorter: (a, b) => {
+      if (a.date && b.date) {
+        return dayjs(a.date).unix() - dayjs(b.date).unix();
+      }
+      return 0;
+    },
   },
   {
     title: "Số tiền",

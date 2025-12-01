@@ -17,6 +17,7 @@ export const HomePage = () => {
     onFinish,
     historyItemSelected,
     setHistoryItemSelected,
+    exportToExcel,
   } = useHomePage();
 
   if (!statistics || !histories)
@@ -31,9 +32,14 @@ export const HomePage = () => {
       <div className="p-4 flex flex-col gap-4">
         <div className="flex items-center justify-between">
           <Statistics statistics={statistics} />
-          <Button type="primary" onClick={() => setOpenModal(true)}>
-            Tạo mới
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button type="primary" onClick={exportToExcel}>
+              Xuất Excel
+            </Button>
+            <Button type="primary" onClick={() => setOpenModal(true)}>
+              Tạo mới
+            </Button>
+          </div>
         </div>
         <HistoriesTable
           historiesData={histories}
@@ -53,7 +59,11 @@ export const HomePage = () => {
         }}
         width={Math.min(maxModalWidth, 800)}
       >
-        <SaveForm form={form} onFinish={onFinish} initValues={historyItemSelected} />
+        <SaveForm
+          form={form}
+          onFinish={onFinish}
+          initValues={historyItemSelected}
+        />
       </Modal>
     </>
   );
