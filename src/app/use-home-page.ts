@@ -211,55 +211,55 @@ export const useHomePage = () => {
     }
   }, [assignee, form]);
 
-  // useEffect(() => {
-  //   const handleStatistics = () => {
-  //     const statisticsFromHistories: StatisticsType[] = [];
-  //     histories?.forEach((history) => {
-  //       const assignees = history.assignee || [];
-  //       const assigneesLength = assignees.length;
-  //       const creator = history.creator;
-  //       const amount = history.amount ? parseFloat(history.amount) : 0;
-  //       const reverseAmountCreator = assignees.includes(creator || "")
-  //         ? (amount / assigneesLength) * (assigneesLength - 1)
-  //         : amount;
-  //       const existingCreator = statisticsFromHistories.find(
-  //         (item) => item.value === creator
-  //       );
-  //       if (existingCreator) {
-  //         existingCreator.total += reverseAmountCreator;
-  //       } else {
-  //         statisticsFromHistories.push({
-  //           label:
-  //             listMembers.find((member) => member.value === creator)?.label ||
-  //             creator ||
-  //             "Unknown",
-  //           value: creator || "Unknown",
-  //           total: reverseAmountCreator,
-  //         });
-  //       }
-  //       assignees.forEach((assignee) => {
-  //         if (assignee !== creator) {
-  //           const existingAssignee = statisticsFromHistories.find(
-  //             (item) => item.value === assignee
-  //           );
-  //           if (existingAssignee) {
-  //             existingAssignee.total -= amount / assigneesLength;
-  //           } else {
-  //             statisticsFromHistories.push({
-  //               label:
-  //                 listMembers.find((member) => member.value === assignee)
-  //                   ?.label || assignee,
-  //               value: assignee,
-  //               total: -amount / assigneesLength,
-  //             });
-  //           }
-  //         }
-  //       });
-  //     });
-  //     console.log("🚀 ~ handleStatistics ~ statisticsFromHistories:", statisticsFromHistories)
-  //   };
-  //   handleStatistics();
-  // }, [histories]);
+  useEffect(() => {
+    const handleStatistics = () => {
+      const statisticsFromHistories: StatisticsType[] = [];
+      histories?.forEach((history) => {
+        const assignees = history.assignee || [];
+        const assigneesLength = assignees.length;
+        const creator = history.creator;
+        const amount = history.amount ? parseFloat(history.amount) : 0;
+        const reverseAmountCreator = assignees.includes(creator || "")
+          ? (amount / assigneesLength) * (assigneesLength - 1)
+          : amount;
+        const existingCreator = statisticsFromHistories.find(
+          (item) => item.value === creator
+        );
+        if (existingCreator) {
+          existingCreator.total += reverseAmountCreator;
+        } else {
+          statisticsFromHistories.push({
+            label:
+              listMembers.find((member) => member.value === creator)?.label ||
+              creator ||
+              "Unknown",
+            value: creator || "Unknown",
+            total: reverseAmountCreator,
+          });
+        }
+        assignees.forEach((assignee) => {
+          if (assignee !== creator) {
+            const existingAssignee = statisticsFromHistories.find(
+              (item) => item.value === assignee
+            );
+            if (existingAssignee) {
+              existingAssignee.total -= amount / assigneesLength;
+            } else {
+              statisticsFromHistories.push({
+                label:
+                  listMembers.find((member) => member.value === assignee)
+                    ?.label || assignee,
+                value: assignee,
+                total: -amount / assigneesLength,
+              });
+            }
+          }
+        });
+      });
+      console.log("🚀 ~ handleStatistics ~ statisticsFromHistories:", statisticsFromHistories)
+    };
+    handleStatistics();
+  }, [histories]);
 
   return {
     statistics,
